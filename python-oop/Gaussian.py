@@ -70,3 +70,35 @@ class Gaussian:
         # Calculate the mean and the standard deviation
         self.mu = self.calculate_mean()
         self.sd = self.calculate_stddev(is_sample)
+
+
+    def histogram(self):
+        """Plot the histogram of instance variable `data`."""
+        plt.hist(self.data)
+        plt.title(self)
+
+    @property
+    def pdf(self):
+        """"""
+        x, m, s = self.data, self.mu, self.sd
+        a = 1./ np.sqrt(2 * math.pi * s ** 2)
+        return a * np.exp(-.5 * ((x - m) / s) ** 2)
+
+    def plot_density(self):
+        """"""
+        res = zip(self.data, self.pdf)
+        res = sorted(res, key= lambda point: point[0])
+
+        x = [point[0] for point in res]
+        y = [point[1] for point in res]
+
+        plt.plot(x, y)
+        plt.title(self)
+
+    def __repr__(self) -> str:
+        return (
+            f'Normal Distribution: mean: {round(self.mu, 2)}, '
+            f'sd: {round(self.sd, 2)}'
+        )
+
+    
