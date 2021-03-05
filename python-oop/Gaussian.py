@@ -77,16 +77,15 @@ class Gaussian:
         plt.hist(self.data)
         plt.title(self)
 
-    @property
-    def pdf(self):
+    def pdf(self, x):
         """"""
-        x, m, s = self.data, self.mu, self.sd
+        m, s = self.mu, self.sd
         a = 1./ np.sqrt(2 * math.pi * s ** 2)
         return a * np.exp(-.5 * ((x - m) / s) ** 2)
 
     def plot_density(self):
         """"""
-        res = zip(self.data, self.pdf)
+        res = zip(self.data, [self.pdf(x) for x in self.data])
         res = sorted(res, key= lambda point: point[0])
 
         x = [point[0] for point in res]
@@ -95,10 +94,30 @@ class Gaussian:
         plt.plot(x, y)
         plt.title(self)
 
+    def __add__(self, other):
+        """Add together two Gaussian distributions.
+        
+        Args:
+        other (Gaussian): Gaussian instance
+        
+        Returns:
+        (Gaussian)
+        """
+        res = Gaussian()
+        res.mu = self.mu + other.mu
+        res.sd = np.sqrt(self.sd ** 2 + other.sd ** 2)
+        return res
+
     def __repr__(self) -> str:
         return (
             f'Normal Distribution: mean: {round(self.mu, 2)}, '
             f'sd: {round(self.sd, 2)}'
         )
 
-    
+
+if __name__ == '__main__':
+    import unittest
+    from test import TestGaussianClass
+    tests = TestGaussianClass()
+    tests_loaded = unittest.TestLoader().loadTestsFromModule(tests)
+    unittest.TextTestRunner().run(tests_loaded)
