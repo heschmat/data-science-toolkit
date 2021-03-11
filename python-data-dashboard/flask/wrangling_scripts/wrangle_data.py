@@ -23,4 +23,42 @@ def clean_data(data_path, keep_columns = ['country_name', '1990', '2015'],
     df_melt['year'] = pd.to_datetime(df_melt['year']).dt.year
 
 
+def return_figures():
+    """Creates four plotly visualizations
 
+    Returns:
+        list (dict): list containing the plotly visualizations
+    """
+    # ======================================================================
+    # 1. plot arable land from 1990 to 2015 in top10 economies as line chart
+    # ======================================================================
+    graph_one = []
+    df = clean_data('data/API_AG.LND.ARBL.HA.PC_DS2_en_csv_v2.csv')
+    df.columns = ['country','year','hectares_arable_land_perperson']
+    df.sort_values('hectares_arable_land_perperson',
+                   ascending=False, inplace=True)
+    countries = df['country'].unique().tolist()
+
+    for country in countries:
+        dfcountry = df[df['country'] == country]
+        xval = dfcountry['year'].tolist()
+        yval = dfcountry['hectares_arable_land_perperson'].tolist()
+
+        graph_one.append(go.scatter(
+            x = xval, y = yval,
+            mode = 'lines',
+            name = country
+        ))
+
+    layout_one = dict(
+        title = 'Change in Hectares Arable Land <br> per Person 1990 to 2015',
+        xaxis = dict(
+            title = 'yeaer',
+            autotick = False,
+            tick0 = 1990,
+            dtick = 25
+        ),
+        yaxis = dict(title = 'Hectares')
+    )
+
+    
