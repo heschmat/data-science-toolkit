@@ -1,0 +1,78 @@
+<html>
+    <head>
+        <title>Send Data Asynchronously: Fetch</title>
+
+        <style>
+            .hidden {
+                display: none;
+            }
+        </style>
+    </head>
+
+    <body>
+        <form>
+            <input type='text' name='course_name' />
+            <input type='text' name='status' />
+            <input type='text' name='num_projects' />
+            <input type='submit' value='Create!'>
+        </form>
+
+        <div id='error' class='hidden'>Something went terribly wrong!</div>
+
+        <table>
+            <tr>
+                <th>course name</th>
+                <th>status</th>
+                <th># projects</th>
+            </tr>
+
+            {% for d in data %}
+            <tr id='courses'>
+                <td>{{ d.course_name }}</td>
+                <td>{{ d.status }}</td>
+                <td>{{ d.num_projects }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <script>
+            // onsubmit handler by default sends the information to the server. 
+            // but we are not interested in the default.
+            document.getElementById('form').onsubmit = function(e) {
+                // prevent default behaviour; i.e., no page refreshing
+                e.preventDefault();
+                // As a result of this prevention, we no longer need 
+                // the `method` & `action` in the <form>
+                // instead, we send that post-request asynchronously using fetch()
+                fetch('/skills/create', {
+                    method: 'POST',
+                    // Here, we'll include the body of information we are interested in.
+                    body: JSON.stringify({
+                        'course_name': document.getElementById('course_name').value
+                    }),
+                    // Since, it's a JSON we sent over, we need to specify the content-type
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }) // fetch is a promise-based library, then we could use the `then()` method
+                // .then(function(response) {
+                //     return response.json();
+                // })
+                .then(response => response.json())
+                .then(jsonResponse => {
+                    console.log(jsonResponse);
+
+                    const table_row = document.createElement('td');
+                    console.log(table_row)
+                    table_row.innerHTML = jsonResponse.get('course_name');
+                    document.getElementById('courses').appendChild(table_row);
+                    document.getElementById('error').className = 'hidden';
+                })
+                .catch(function() {
+                    // in case error happens, remove the class name `hidden`
+                    document.getElementById('error').className = ''
+                })
+            }
+        </script>
+    </body>
+</html>
