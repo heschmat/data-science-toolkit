@@ -59,9 +59,12 @@
                 .then(jsonResponse => {
                     console.log(jsonResponse);
 
-                    const table_row = document.createElement('td');
-                    console.log(table_row)
-                    table_row.innerHTML = jsonResponse.get('course_name');
+                    const table_row = document.createElement('TD');
+                    console.log('before <========= ', table_row.innerHTML);
+                    table_row.innerHTML = jsonResponse['course_name'];
+                    // table_row.innerHTML = jsonResponse.get('course_name');
+                    console.log('after =========> ', table_row.innerHTML);
+                    
                     document.getElementById('courses').appendChild(table_row);
                     document.getElementById('error').className = 'hidden';
                 })
