@@ -6,6 +6,12 @@
             .hidden {
                 display: none;
             }
+
+            ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
         </style>
     </head>
 
@@ -19,11 +25,18 @@
 
         <ul id='todos'>
             {% for d in data %}
-            <li>{{ d.description }}</li>
+            <li><input class='task-done' type='checkbox' {% if d.completed %} checked {% endif %}>{{ d.description }}</li>
             {% endfor %}
         </ul>
 
         <script>
+            const checkboxes = document.querySelectorAll('.task-done');
+            for (let i = 0; i < checkboxes.length; i++) {
+                const checkbox = checkboxes[i]
+                checkbox.onchange = function(e) {
+                    console.log('event', e)
+                }
+            }
             document.getElementById('form').onsubmit = function(e) {
                 e.preventDefault();
                 // Send the request asynchronously using fetch
