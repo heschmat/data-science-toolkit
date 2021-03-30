@@ -1,25 +1,31 @@
 # Using AJAX to send data asynchronously
 import sys
 from flask import Flask, render_template, request, jsonify, abort
-from flask_sqlalchemy import SQLAlchemy 
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 
 app = Flask(__name__)
-db_uri = 'postgres://postgres:huaamy@localhost:5432/challenges'
+db_uri = 'postgres://postgres:huaamy@localhost:5432/todoapp'
 app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 
 class Todo(db.Model):
     __tablename__ = 'todos'
     id = db.Column(db.Integer, primary_key= True)
     description = db.Column(db.String(), nullable= False)
+    completed = db.Column(db.Boolean, nullable= False, default= False)
 
     def __repr__(self):
         return f'<Todo {self.id}: {self.description}>'
 
-# Make sure that the tables are created for all the models.
-db.create_all()
+# # Make sure that the tables are created for all the models.
+# db.create_all()
+# Since we are using migrations, we wont need db.create_all()
+# rather, we want the migrations version to store everything,
+# from db creation to schema modifications over time.
 
 @app.route('/')
 def index():
