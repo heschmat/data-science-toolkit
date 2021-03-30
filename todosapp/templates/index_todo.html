@@ -1,0 +1,57 @@
+<html>
+    <head>
+        <title>Todo App</title>
+
+        <style>
+            .hidden {
+                display: none;
+            }
+        </style>
+    </head>
+
+    <body>
+        <form id='form'>
+            <input type='text' id='description' name='description' />
+            <input type='submit' value='Create!' />
+        </form>
+
+        <div id='error' class='hidden'>Something went wrong!</div>
+
+        <ul id='todos'>
+            {% for d in data %}
+            <li>{{ d.description }}</li>
+            {% endfor %}
+        </ul>
+
+        <script>
+            document.getElementById('form').onsubmit = function(e) {
+                e.preventDefault();
+                // Send the request asynchronously using fetch
+                fetch('/todos/create', {
+                    method: 'POST',
+
+                    body: JSON.stringify({
+                        'description': document.getElementById('description').value
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(jsonRequest => {
+                    // Create the object.
+                    console.log(jsonRequest);
+                    // Append it to the list of todos.
+                    const liEl = document.createElement('LI');
+                    liEl.innerHTML = jsonRequest['description'];
+                    console.log(jsonRequest['description'])
+                    document.getElementById('todos').appendChild(liEl);
+                    document.getElementById('error').className = 'hidden';
+                })
+                .catch(function() {
+                    document.getElementById('erorr').className = ''
+                })
+            }
+        </script>
+    </body>
+</html>
