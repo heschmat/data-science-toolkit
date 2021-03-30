@@ -1,5 +1,6 @@
 # Using AJAX to send data asynchronously
-from flask import Flask, render_template, request, jsonify
+import sys
+from flask import Flask, render_template, request, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy 
 
 
@@ -27,18 +28,36 @@ def index():
 
 @app.route('/todos/create', methods=['POST'])
 def create_todo():
-    # Get the JSON that comes back from the AJAX request.
-    data = request.get_json()
-    description = data['description']
-    todo = Todo(description = description)
+    # Initialize the error & the response body.
+    err = False
+    ## The default session option for `expire_on_commit` is True.
+    ## To not access the Todo() boject after commiting, we save the result
+    ## in a dictionary, and we'll return the jsonify-ed version of it.
+    body = {} 
+    try:
+        # Get the JSON that comes back from the AJAX request.
+        data = request.get_json()
+        description = data['description']
+        todo = Todo(description = description)
 
-    db.session.add(todo)
-    db.session.commit()
+        db.session.add(todo)
+        db.session.commit()
 
-    # Instead of redirecting,
-    # We want to return a json object that includes the info.
-    res = jsonify({
-        'description': todo.description
-    })
-    # return redirect(url_for('index'))
-    return res
+        # Add the info to the body.
+        body['description'] = todo.description
+    except:
+        err = True
+        # If sth went wrong, rollback.
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        # Always close your session, no matter what happens.
+        db.session.close()
+    
+    if not err:
+        # Return a json object that includes the info.
+        return jsonify(body)
+    else: # if error
+        # The route handler should always return something
+        # or raise an intentional exception, in the case of an error.
+        abort(500)
