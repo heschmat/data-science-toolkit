@@ -1,15 +1,14 @@
-# Using AJAX to send data asynchronously
 import sys
-from flask import Flask, render_template, request, jsonify, abort
+from flask import Flask, render_template, request, jsonify, abort, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
 
 app = Flask(__name__)
-db_uri = 'postgres://postgres:huaamy@localhost:5432/todoapp'
-app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+uri_db = 'postgres://postgres@localhost:5432/todoapp'
+app.config['SQLALCHEMY_DATABASE_URI'] = uri_db
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+migrate = Migrate(app, db, directory= 'migrations')
 
 
 class Todo(db.Model):
@@ -19,7 +18,8 @@ class Todo(db.Model):
     completed = db.Column(db.Boolean, nullable= False, default= False)
 
     def __repr__(self):
-        return f'<Todo {self.id}: {self.description}>'
+        res = f'<Todo {self.id} {self.description}>'
+        return res
 
 # # Make sure that the tables are created for all the models.
 # db.create_all()
@@ -29,41 +29,66 @@ class Todo(db.Model):
 
 @app.route('/')
 def index():
-    data = Todo.query.all()
+    # Always show the tasks chronologically.
+    # Lower ids have been entered sooner.
+    data= Todo.query.order_by('id').all()
     return render_template('index_todo.html', data= data)
+
+
+# @app.route('/todos/create', methods=['POST'])
+# def create_todo():
+#     description = request.form.get('descriptioni', '')
+#     todo = Todo(description= description)
+#     db.session.add(todo)
+#     db.session.commit()
+
+#     return redirect(url_for('index'))
 
 @app.route('/todos/create', methods=['POST'])
 def create_todo():
     # Initialize the error & the response body.
     err = False
     ## The default session option for `expire_on_commit` is True.
-    ## To not access the Todo() boject after commiting, we save the result
-    ## in a dictionary, and we'll return the jsonify-ed version of it.
+    ## To not access the Todo() boject after commiting, save the result
+    ## in a dictionary, return the jsonify-ed version of it.
     body = {} 
     try:
         # Get the JSON that comes back from the AJAX request.
         data = request.get_json()
         description = data['description']
-        todo = Todo(description = description)
-
+        
+        todo = Todo(description= description)
         db.session.add(todo)
         db.session.commit()
-
         # Add the info to the body.
         body['description'] = todo.description
+
     except:
         err = True
-        # If sth went wrong, rollback.
-        db.session.rollback()
+        # If sth goes wrong, rollback.
+        db.session.rollout()
         print(sys.exc_info())
     finally:
-        # Always close your session, no matter what happens.
+        # In any case - success or failure- close the session.
         db.session.close()
-    
+
     if not err:
-        # Return a json object that includes the info.
         return jsonify(body)
-    else: # if error
-        # The route handler should always return something
+    else:
+        # N.B. The route handler should always return sth, or
         # or raise an intentional exception, in the case of an error.
-        abort(500)
+        abort(400)
+
+@app.route('/todos/<todo_id>/set-done', methods=['POST'])
+def set_task_done(todo_id):
+    try:
+        is_done = request.get_json()['completed']
+        task = Todo.query.get(todo_id)
+        task.completed = is_done
+        db.session.commit()
+    except:
+        db.session.rollback()
+    finally:
+        db.session.close()
+
+    return redirect(url_for('index'))
