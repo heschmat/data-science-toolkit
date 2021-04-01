@@ -5,7 +5,7 @@ from flask_migrate import Migrate
 
 
 app = Flask(__name__)
-uri_db = 'postgres://postgres@localhost:5432/todoapp'
+uri_db = 'postgres://postgres:huaamy@localhost:5432/todoapp'
 app.config['SQLALCHEMY_DATABASE_URI'] = uri_db
 db = SQLAlchemy(app)
 migrate = Migrate(app, db, directory= 'migrations')
@@ -92,3 +92,18 @@ def set_task_done(todo_id):
         db.session.close()
 
     return redirect(url_for('index'))
+
+@app.route('/todos/<todo_id>/delete-task', methods=['DELETE'])
+def remove_task(todo_id):
+    try:
+        task = Todo.query.get(todo_id)
+        db.session.delete(task)
+        # or: Todo.query.filter_by(id= todo_id).delete()
+        db.session.commit()
+    except:
+        db.session.rollback()
+    finally:
+        db.session.close()
+
+    # return redirect(url_for('index'))
+    return jsonify({'success': True})

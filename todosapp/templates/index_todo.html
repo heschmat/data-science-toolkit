@@ -1,6 +1,7 @@
 <html>
     <head>
         <title>Todo App</title>
+        <!-- <link rel="stylesheet" href="../style/styles.css"> -->
 
         <style>
             .hidden {
@@ -26,7 +27,7 @@
                 float: right;
                 cursor: pointer;
                 font-size: 20px;
-            }
+            }            
         </style>
     </head>
 
@@ -50,12 +51,32 @@
                 {{ task.description }}
                 <!-- Add X near the task descriptioni for deletion puprose 
                 &cross; => X -->
-                <button>&cross;</button>
+                <button class="btn-del" data-id= {{ task.id }}>&cross;</button>
             </li>
             {% endfor %}
         </ul>
 
         <script>
+            const btns = document.querySelectorAll('.btn-del')
+            for (let i = 0; i < btns.length; i++) {
+                const btn = btns[i]
+
+                btn.onclick = function(e) {
+                    console.log(e);
+
+                    const todoId = e.target.dataset['id'];
+                    fetch('/todos/' + todoId + '/delete-task', {
+                        method: 'DELETE'
+                    })
+                    .then(function() {
+                        const parentEl = e.target.parentElement;
+                        parentEl.remove();
+                    })
+
+                }
+            }
+
+
             const checkBoxes = document.querySelectorAll('.task-done')
             for (let i = 0; i < checkBoxes.length; i++) {
                 const checkBox = checkBoxes[i]
@@ -64,7 +85,6 @@
                     console.log(e);
 
                     const todoId = e.target.dataset['id'];
-                    console.log('/todos/' + todoId + '/set-done')
                     fetch('/todos/' + todoId + '/set-done', {
                         method: 'POST',
                         body: JSON.stringify({
@@ -105,9 +125,24 @@
                     // jsonResponse is now a json.
                     console.log(jsonResponse);
                     
-                    // create an <LI> tag; has to be capital  case.
-                    const liEl = document.createElement('LI'); 
-                    liEl.innerHTML = jsonResponse['description']; 
+                    // create an <LI> tag; has to be capital case.
+                    const liEl = document.createElement('li');
+                    // 1. Create the checkbox for liEl.
+                    const checkbox = document.createElement('input');
+                    checkbox.className = 'task-done';
+                    checkbox.type = 'checkbox';
+                    checkbox.setAttribute('data-id', jsonResponse['id']);
+                    liEl.appendChild(checkbox);
+                    // 2. Create text for liEl.
+                    const text = document.createTextNode(' ' + jsonResponse['description']);
+                    liEl.appendChild(text);
+                    // 3. Create delete button (X) for liEl.
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'btn-del';
+                    deleteBtn.setAttribute('data-id', jsonResponse['id']);
+                    deleteBtn.innerHTML = '&cross;';
+                    liEl.appendChild(deleteBtn);
+                    
                     document.getElementById('todos').appendChild(liEl);
                     document.getElementById('error').className = 'hidden';
                 })
