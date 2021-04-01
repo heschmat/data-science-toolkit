@@ -11,6 +11,21 @@
                 list-style: none;
                 padding: 0;
                 margin: 0;
+                width: 200px;
+            }
+
+            li {
+                clear: both;
+            }
+
+            li button {
+                -webkit-appearance: none;
+                border: none;
+                outline: none;
+                color: red;
+                float: right;
+                cursor: pointer;
+                font-size: 20px;
             }
         </style>
     </head>
@@ -33,6 +48,9 @@
                 type="checkbox" {% if task.completed %} checked {% endif %}
                 data-id= {{ task.id }}>
                 {{ task.description }}
+                <!-- Add X near the task descriptioni for deletion puprose 
+                &cross; => X -->
+                <button>&cross;</button>
             </li>
             {% endfor %}
         </ul>
