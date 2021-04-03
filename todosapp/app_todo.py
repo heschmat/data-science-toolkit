@@ -17,7 +17,7 @@ class Todo(db.Model):
     description = db.Column(db.String(), nullable= False)
     completed = db.Column(db.Boolean, nullable= False, default= False)
     # By default, db.ForeignKey has nullable = False
-    list_id = db.Column(db.Integer, db.ForeignKey('todolists.id'))
+    list_id = db.Column(db.Integer, db.ForeignKey('todolists.id'), nullable= False)
 
     def __repr__(self):
         res = f'<Todo {self.id} {self.description}>'
@@ -39,12 +39,12 @@ class TodoList(db.Model):
 # rather, we want the migrations version to store everything,
 # from db creation to schema modifications over time.
 
-@app.route('/')
-def index():
-    # Always show the tasks chronologically.
-    # Lower ids have been entered sooner.
-    data= Todo.query.order_by('id').all()
-    return render_template('index_todo.html', data= data)
+# @app.route('/')
+# def index():
+#     # Always show the tasks chronologically.
+#     # Lower ids have been entered sooner.
+#     data= Todo.query.order_by('id').all()
+#     return render_template('index_todo.html', data= data)
 
 
 # @app.route('/todos/create', methods=['POST'])
@@ -119,3 +119,15 @@ def remove_task(todo_id):
 
     # return redirect(url_for('index'))
     return jsonify({'success': True})
+
+@app.route('/lists/<list_id>')
+def get_list_todos(list_id):
+    # Make sure the only todos visible will be per list_id.
+    # Order the tasks time-wise.
+    data = Todo.query.filter_by(list_id= list_id).order_by('id').all()
+    return render_template('index_todo.html', data= data)
+
+
+@app.route('/')
+def index():
+    return redirect(url_for('get_list_todos', list_id= 1))
