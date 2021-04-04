@@ -2,7 +2,7 @@ import sys
 from flask import Flask, render_template, request, jsonify, abort, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from sqlalchemy.sql.expression import false
+from sqlalchemy.sql.expression import false, true
 
 
 app = Flask(__name__)
@@ -207,3 +207,29 @@ def set_list_done(list_id):
         abort(500)
     else:
         return '', 200
+
+@app.route('/lists/<list_id>/delete', methods=['DELETE'])
+def remove_list(list_id):
+    err = False
+    try:
+        list_to_del = TodoList.query.get(list_id)
+        # Remove all the sub-tasks related to the list.
+        for task in list_to_del.todos:
+            db.session.delete(task)
+        # Remove the list itself.
+        db.session.delete(list_to_del)
+
+        db.session.commit()
+    except:
+        err =True
+        db.session.rollback()
+        print(sys.exc_info)
+    finally:
+        db.session.close()
+    
+    if err:
+        abort(500)
+    else:
+        # return redirect(url_for('index'))
+        return jsonify({'success': True})
+
