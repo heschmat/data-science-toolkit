@@ -159,3 +159,29 @@ def index():
     # The homepage will be the tasks related to list_id = 1:
     # i.e., `Uncategorized` tasks.
     return redirect(url_for('get_list_todos', list_id= 1))
+
+@app.route('/lists/create')
+def create_list():
+    err = False
+    body = {}
+    try:
+        data = request.get_json()
+        # Create the list.
+        name = data['name']
+        todolist = TodoList(name= name)
+        db.session.add(todolist)
+        db.session.commit()
+        # Save the info in body.
+        body['id'] = todolist.id
+        body['name'] = todolist.name
+    except:
+        err = True
+        db.session.rollback()
+        print(sys.exc_info)
+    finally:
+        db.session.close()
+    
+    if err:
+        abort(500)
+    else:
+        return jsonify(body)

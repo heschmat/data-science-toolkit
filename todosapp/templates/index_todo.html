@@ -39,6 +39,11 @@
 
     <body>
         <div class="lists-wrapper">
+            <h4>Todo Lists</h4>
+            <form id="form-list">
+                <input type="text" id="input-todolist">
+                <button type="submit">Create List</button>
+            </form>
             <ul id="lists">
                 {% for list in lists %}
                 <li>
@@ -49,17 +54,18 @@
         </div>
 
         <div class="todos-wrapper">
+            <h4>Todo Items ({{ active_list.name }})</h4>
             <form id='form'>
                 <!-- this name=<> appears in the url:
                 e.g., http://localhost:5000/?description=TaskXYZ -->
                 <input type='text' id='description' name='description' />
-                <input type='submit' value='Create!' />
+                <input type='submit' value='Create Task' />
             </form>
     
             <div id='error' class='hidden'>Something went wrong!</div>
     
             <ul id="todos">
-                <h4>{{ active_list.name }}</h4>
+                <!-- <h4>{{ active_list.name }}</h4> -->
                 {% for task in tasks %}
                 <!-- https://jinja.palletsprojects.com/en/2.10.x/templates/#if -->
                 <li>
@@ -94,7 +100,6 @@
 
                 }
             }
-
 
             const checkBoxes = document.querySelectorAll('.task-done')
             for (let i = 0; i < checkBoxes.length; i++) {
@@ -163,6 +168,31 @@
                     liEl.appendChild(deleteBtn);
                     
                     document.getElementById('todos').appendChild(liEl);
+                    document.getElementById('error').className = 'hidden';
+                })
+                .catch(function() {
+                    document.getElementById('error').className = '';
+                })
+            }
+
+            document.getElementById('form-list').onsubmit = function(e) {
+                e.preventDefault();
+
+                fetch('/lists/create', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        'name': document.getElementById('input-todolist').value
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(jsonResponse => {
+                    const liEl = document.createElement('LI');
+
+                    liEl.innerHTML = jsonResponse['name'];
+                    document.getElementById('lists').appendChild(liEl);
                     document.getElementById('error').className = 'hidden';
                 })
                 .catch(function() {
