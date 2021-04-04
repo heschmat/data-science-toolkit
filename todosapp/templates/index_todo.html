@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
     <head>
         <title>Todo App</title>
@@ -10,8 +11,8 @@
 
             ul {
                 list-style: none;
-                padding: 0;
-                margin: 0;
+                padding-left: 0;
+                /* margin: 0; */
                 width: 200px;
             }
 
@@ -26,35 +27,53 @@
                 color: red;
                 float: right;
                 cursor: pointer;
-                font-size: 20px;
-            }            
+                font-size: 16px;
+            }
+
+            .lists-wrapper, .todos-wrapper {
+                display: inline-block;
+                vertical-align: top;
+            }
         </style>
     </head>
 
     <body>
-        <form id='form'>
-            <!-- this name=<> appears in the url:
-            e.g., http://localhost:5000/?description=TaskXYZ -->
-            <input type='text' id='description' name='description' />
-            <input type='submit' value='Create!' />
-        </form>
+        <div class="lists-wrapper">
+            <ul id="lists">
+                {% for list in lists %}
+                <li>
+                    <a href="/lists/{{ list.id }}">{{ list.name }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
 
-        <div id='error' class='hidden'>Something went wrong!</div>
-
-        <ul id="todos">
-            {% for task in data %}
-            <!-- https://jinja.palletsprojects.com/en/2.10.x/templates/#if -->
-            <li>
-                <input class="task-done"
-                type="checkbox" {% if task.completed %} checked {% endif %}
-                data-id= {{ task.id }}>
-                {{ task.description }}
-                <!-- Add X near the task descriptioni for deletion puprose 
-                &cross; => X -->
-                <button class="btn-del" data-id= {{ task.id }}>&cross;</button>
-            </li>
-            {% endfor %}
-        </ul>
+        <div class="todos-wrapper">
+            <form id='form'>
+                <!-- this name=<> appears in the url:
+                e.g., http://localhost:5000/?description=TaskXYZ -->
+                <input type='text' id='description' name='description' />
+                <input type='submit' value='Create!' />
+            </form>
+    
+            <div id='error' class='hidden'>Something went wrong!</div>
+    
+            <ul id="todos">
+                <h4>{{ active_list.name }}</h4>
+                {% for task in tasks %}
+                <!-- https://jinja.palletsprojects.com/en/2.10.x/templates/#if -->
+                <li>
+                    <input class="task-done"
+                    type="checkbox" {% if task.completed %} checked {% endif %}
+                    data-id= {{ task.id }}>
+                    {{ task.description }}
+                    <!-- Add X near the task descriptioni for deletion puprose 
+                    &cross; => X -->
+                    <button class="btn-del" data-id= {{ task.id }}>&cross;</button>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
 
         <script>
             const btns = document.querySelectorAll('.btn-del')
