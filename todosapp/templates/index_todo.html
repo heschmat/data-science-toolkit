@@ -47,7 +47,9 @@
             <ul id="lists">
                 {% for list in lists %}
                 <li>
+                    <input type="checkbox" data-id="{{ list.id }}" class="list-done">
                     <a href="/lists/{{ list.id }}">{{ list.name }}</a>
+                    <button class="btn-list-del" data-id="{{ list.id }}">&cross;</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -83,6 +85,38 @@
         </div>
 
         <script>
+            const listCheckboxes = document.querySelectorAll('.list-done');
+            for (let i = 0; i < listCheckboxes.length; i++) {
+                const checkbox = listCheckboxes[i];
+
+                checkbox.onchange = function(e) {
+                    // If the list is done, make sure all sub-tasks are done.
+                    if (e.target.checked) {
+                        const listId = e.target.dataset['id'];
+
+                        fetch('/lists/' + listId + '/set-done', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                        .then(function() {
+                            const todoCheckboxes = document.querySelectorAll('.task-done')
+                            for (let i = 0; i < todoCheckboxes.length; i++) {
+                                todoCheckboxes[i].checked = true;
+                            }
+                            // In case of sucess, hide the error message.
+                            document.getElementById('error').className = 'hidden';
+                        })
+                        .catch(function() {
+                            // Show the error message.
+                            document.getElementById('error').className = '';
+                        })
+                    }
+                }
+            }
+
+
             const btns = document.querySelectorAll('.btn-del')
             for (let i = 0; i < btns.length; i++) {
                 const btn = btns[i]
