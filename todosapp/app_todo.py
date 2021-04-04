@@ -185,3 +185,25 @@ def create_list():
         abort(500)
     else:
         return jsonify(body)
+
+@app.route('/lists/<list_id>/set-done', methods=['POST'])
+def set_list_done(list_id):
+    err = False
+
+    try:
+        list_tasks = TodoList.query.get(list_id)
+        # A list is only done, when all the sub-tasks are done.
+        for task in list_tasks.todos:
+            task.completed = True
+        
+        db.session.commit()
+    except:
+        err = True
+        db.session.rollback()
+    finally:
+        db.session.close()
+
+    if err:
+        abort(500)
+    else:
+        return '', 200
