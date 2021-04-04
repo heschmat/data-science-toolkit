@@ -160,7 +160,7 @@ def index():
     # i.e., `Uncategorized` tasks.
     return redirect(url_for('get_list_todos', list_id= 1))
 
-@app.route('/lists/create')
+@app.route('/lists/create', methods=['POST'])
 def create_list():
     err = False
     body = {}
