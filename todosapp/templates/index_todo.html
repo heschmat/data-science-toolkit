@@ -136,6 +136,23 @@
                 }
             }
 
+            const listBtns = document.querySelectorAll('.btn-list-del')
+            for (let i = 0; i < listBtns.length; i++) {
+                const listBtnDel = listBtns[i];
+                listBtnDel.onclick = function(e) {
+                    console.log('Delte list ...', e);
+
+                    fetch('/lists/' + e.target.dataset['id'] + '/delete', {
+                        method: 'DELETE'
+                    })
+                    .then(function() {
+                        const parentEl = e.target.parentElement;
+                        parentEl.remove();
+                        window.location.reload(true);
+                    })
+                }
+            }
+
             const checkBoxes = document.querySelectorAll('.task-done')
             for (let i = 0; i < checkBoxes.length; i++) {
                 const checkBox = checkBoxes[i]
